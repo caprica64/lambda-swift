@@ -1,35 +1,36 @@
-# Prime Checker API
+# Prime Checker & Factorial Calculator API
 
-A production-ready Terraform-based AWS infrastructure that creates an API Gateway connected to a Swift Lambda function to check if numbers are prime. Built with modular Terraform architecture for scalability and maintainability.
+A production-ready Terraform-based AWS infrastructure that creates an API Gateway connected to Swift Lambda functions for prime number checking and factorial calculation. Built with modular Terraform architecture for scalability and maintainability.
 
-## 🚀 Live API Endpoint
+## 🚀 Live API Endpoints
 
 **Base URL**: `https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev`  
-**Prime Checker**: `POST /prime`
+**Prime Checker**: `POST /prime`  
+**Factorial Calculator**: `POST /factorial`
 
 ## 🏗️ Architecture
 
-- **API Gateway**: Regional REST API with `/prime` endpoint and CORS support
-- **Lambda Function**: Swift custom runtime with efficient prime checking algorithm
+- **API Gateway**: Regional REST API with `/prime` and `/factorial` endpoints and CORS support
+- **Lambda Functions**: Swift custom runtime with efficient algorithms for prime checking and factorial calculation
 - **X-Ray Tracing**: Distributed tracing for API Gateway and Lambda with 10% sampling rate
 - **IAM Roles**: Least-privilege security with proper execution permissions
 - **Modular Structure**: Organized using Terraform modules for reusability
 
 ## 📡 API Usage
 
-### Endpoint
+### Prime Checker Endpoint
 ```
 POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime
 ```
 
-### Request Format
+#### Request Format
 ```json
 {
   "number": 17
 }
 ```
 
-### Success Response
+#### Success Response
 ```json
 {
   "number": 17,
@@ -38,7 +39,29 @@ POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime
 }
 ```
 
-### Error Response
+### Factorial Calculator Endpoint
+```
+POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/factorial
+```
+
+#### Request Format
+```json
+{
+  "number": 5
+}
+```
+
+#### Success Response
+```json
+{
+  "number": 5,
+  "factorial": "120",
+  "message": "Factorial of 5 calculated successfully",
+  "calculationTime": 0.000062
+}
+```
+
+### Error Response (Both Endpoints)
 ```json
 {
   "error": "Invalid input. Please provide a valid number."
@@ -47,7 +70,7 @@ POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime
 
 ## 🧪 Testing Examples
 
-### Test Prime Numbers
+### Prime Checker Tests
 ```bash
 # Test with prime number
 curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime \
@@ -63,16 +86,42 @@ curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime \
 curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime \
   -H "Content-Type: application/json" \
   -d '{"number": 2}'
+```
 
-# Test large prime
-curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime \
+### Factorial Calculator Tests
+```bash
+# Test small factorial
+curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/factorial \
   -H "Content-Type: application/json" \
-  -d '{"number": 97}'
+  -d '{"number": 5}'
 
-# Test error handling
+# Test larger factorial
+curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/factorial \
+  -H "Content-Type: application/json" \
+  -d '{"number": 10}'
+
+# Test very large factorial (string-based calculation)
+curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/factorial \
+  -H "Content-Type: application/json" \
+  -d '{"number": 25}'
+
+# Test edge case
+curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/factorial \
+  -H "Content-Type: application/json" \
+  -d '{"number": 0}'
+```
+
+### Error Handling Tests
+```bash
+# Test invalid input on prime endpoint
 curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime \
   -H "Content-Type: application/json" \
   -d '{"number": "invalid"}'
+
+# Test out of range on factorial endpoint
+curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/factorial \
+  -H "Content-Type: application/json" \
+  -d '{"number": 1001}'
 ```
 
 ## 🛠️ Deployment
@@ -116,10 +165,11 @@ curl -X POST https://w3172e9z33.execute-api.us-east-1.amazonaws.com/dev/prime \
 
 ### Configuration Variables
 ```hcl
-aws_region           = "us-east-1"        # AWS region for deployment
-api_name            = "prime-checker-api" # API Gateway name
-stage_name          = "dev"               # API Gateway stage
-lambda_function_name = "prime-checker"    # Lambda function name
+aws_region              = "us-east-1"        # AWS region for deployment
+api_name               = "prime-checker-api" # API Gateway name
+stage_name             = "dev"               # API Gateway stage
+lambda_function_name   = "prime-checker"     # Prime Lambda function name
+factorial_function_name = "factorial-calculator" # Factorial Lambda function name
 
 # X-Ray Tracing Configuration
 enable_xray_tracing  = true               # Enable distributed tracing
@@ -136,7 +186,7 @@ log_retention_days   = 14                 # CloudWatch log retention in days
 ├── terraform.tfvars.example # Example configuration
 ├── .terraform.lock.hcl      # Provider version lock
 ├── modules/
-│   ├── lambda/              # Lambda function module
+│   ├── lambda/              # Prime Lambda function module
 │   │   ├── main.tf         # Lambda resources
 │   │   ├── variables.tf    # Lambda variables
 │   │   ├── outputs.tf      # Lambda outputs
@@ -148,6 +198,18 @@ log_retention_days   = 14                 # CloudWatch log retention in days
 │   │       └── Sources/
 │   │           └── PrimeChecker/
 │   │               └── main.swift     # Swift prime checker implementation
+│   ├── factorial-lambda/    # Factorial Lambda function module
+│   │   ├── main.tf         # Lambda resources
+│   │   ├── variables.tf    # Lambda variables
+│   │   ├── outputs.tf      # Lambda outputs
+│   │   └── src/            # Swift Lambda source code
+│   │       ├── Package.swift           # Swift package definition
+│   │       ├── build.sh               # Docker-based build script
+│   │       ├── bootstrap              # Lambda runtime bootstrap (generated)
+│   │       ├── factorial-deployment.zip # Deployment package (generated)
+│   │       └── Sources/
+│   │           └── FactorialCalculator/
+│   │               └── main.swift     # Swift factorial calculator implementation
 │   ├── api-gateway/        # API Gateway module
 │   │   ├── main.tf         # API Gateway resources
 │   │   ├── variables.tf    # API Gateway variables
@@ -160,51 +222,43 @@ log_retention_days   = 14                 # CloudWatch log retention in days
 
 ## ⚡ Swift Lambda Function Features
 
-### Runtime Implementation
-- **Custom Runtime**: Uses AWS Lambda Runtime for Swift (provided.al2)
-- **Cross-Compilation**: Docker-based build for Amazon Linux compatibility
-- **Static Linking**: Self-contained binary with minimal dependencies
-- **Performance**: Native compiled code for optimal execution speed
-
-### Prime Algorithm
-- **Efficient Implementation**: Uses square root optimization with stride iteration
+### Prime Checker Lambda
+- **Runtime Implementation**: Uses AWS Lambda Runtime for Swift (provided.al2)
+- **Prime Algorithm**: Efficient square root optimization with stride iteration
 - **Edge Case Handling**: Properly handles 0, 1, 2, and negative numbers
 - **Performance**: O(√n) time complexity with optimized loop structure
+
+### Factorial Calculator Lambda
+- **Runtime Implementation**: Uses AWS Lambda Runtime for Swift (provided.al2)
+- **Factorial Algorithm**: Supports both standard and string-based calculation for large numbers
+- **Large Number Support**: Handles factorials up to 1000! using string multiplication
+- **Performance Tracking**: Returns calculation time for performance analysis
+- **Input Validation**: Validates input range (0-1000) to prevent excessive computation
+
+### Shared Features
+- **Cross-Compilation**: Docker-based build for Amazon Linux compatibility
+- **Static Linking**: Self-contained binary with minimal dependencies
 - **Type Safety**: Swift's strong typing prevents runtime errors
-
-### Build Process
-- **Docker Integration**: Uses `swift:5.9-amazonlinux2` for consistent builds
-- **Static Compilation**: `--static-swift-stdlib` flag for standalone deployment
-- **Architecture Targeting**: Cross-compiles from ARM64 to x86_64 for Lambda
-- **Automated Packaging**: Creates deployment-ready ZIP with bootstrap executable
-
-### Error Handling
-- **Input Validation**: Robust JSON parsing and type checking
-- **Graceful Failures**: Returns structured error responses with proper HTTP status codes
+- **Error Handling**: Robust JSON parsing and type checking
 - **CORS Integration**: Built-in CORS headers for all responses including errors
-- **Logging**: CloudWatch integration for monitoring and debugging
-
-### CORS Support
-- **Cross-Origin Requests**: Enabled for web applications
-- **Proper Headers**: Access-Control-Allow-Origin, Methods, Headers
-- **OPTIONS Method**: Pre-flight request support with dedicated handler
-- **Error Responses**: CORS headers included in all response types
+- **X-Ray Tracing**: Active distributed tracing for performance monitoring
 
 ## 🔧 Infrastructure Details
 
 ### AWS Resources Created
 - **API Gateway REST API**: Regional endpoint with custom domain support
-- **API Gateway Resource**: `/prime` path
-- **API Gateway Methods**: POST and OPTIONS (CORS)
-- **API Gateway Integration**: Lambda proxy integration
-- **API Gateway Deployment**: Automated deployment
+- **API Gateway Resources**: `/prime` and `/factorial` paths
+- **API Gateway Methods**: POST and OPTIONS (CORS) for both endpoints
+- **API Gateway Integrations**: Lambda proxy integrations for both functions
+- **API Gateway Deployment**: Automated deployment with triggers
 - **API Gateway Stage**: Environment-specific stage (dev/prod) with X-Ray tracing
-- **Lambda Function**: Swift custom runtime (provided.al2) with X-Ray tracing
-- **IAM Role**: Lambda execution role with X-Ray permissions
-- **IAM Policy**: Basic execution and X-Ray tracing permissions
-- **Lambda Permission**: API Gateway invoke permission
-- **X-Ray Sampling Rule**: Configurable sampling rate for distributed tracing
-- **CloudWatch Log Group**: X-Ray trace storage and retention
+- **Prime Lambda Function**: Swift custom runtime (provided.al2) with X-Ray tracing
+- **Factorial Lambda Function**: Swift custom runtime (provided.al2) with X-Ray tracing
+- **IAM Roles**: Lambda execution roles with X-Ray permissions for both functions
+- **IAM Policies**: Basic execution and X-Ray tracing permissions
+- **Lambda Permissions**: API Gateway invoke permissions for both functions
+- **X-Ray Sampling Rules**: Configurable sampling rate for distributed tracing
+- **CloudWatch Log Groups**: X-Ray trace storage and retention for both functions
 
 ### Security Features
 - **Least Privilege IAM**: Minimal required permissions
