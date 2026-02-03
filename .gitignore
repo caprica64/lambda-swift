@@ -35,3 +35,17 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+# Swift build artifacts
+.build/
+*.xcodeproj
+*.xcworkspace
+.swiftpm/
+Package.resolved
+
+# Lambda deployment packages
+lambda-deployment.zip
+bootstrap
+
+# macOS
+.DS_Store

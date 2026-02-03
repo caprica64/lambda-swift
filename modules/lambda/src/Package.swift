@@ -10,7 +10,7 @@ let package = Package(
         .executable(name: "PrimeChecker", targets: ["PrimeChecker"])
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", from: "1.0.0")
+        .package(url: "https://github.com/swift-server/swift-aws-lambda-runtime.git", from: "0.5.2")
     ],
     targets: [
         .executableTarget(

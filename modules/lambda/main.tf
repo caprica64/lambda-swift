@@ -22,28 +22,20 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   role       = aws_iam_role.lambda_role.name
 }
 
-# Create deployment package
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  output_path = "${path.module}/lambda_function.zip"
-  source_dir  = "${path.module}/src"
-}
-
 # Lambda function
 resource "aws_lambda_function" "prime_checker" {
-  filename         = data.archive_file.lambda_zip.output_path
+  filename         = "${path.module}/lambda_function.zip"
   function_name    = var.function_name
   role            = aws_iam_role.lambda_role.arn
-  handler         = "index.handler"
-  runtime         = "nodejs18.x"
+  handler         = "bootstrap"
+  runtime         = "provided.al2"
   timeout         = 30
   memory_size     = 128
 
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  source_code_hash = filebase64sha256("${path.module}/lambda_function.zip")
 
   depends_on = [
     aws_iam_role_policy_attachment.lambda_basic_execution,
-    data.archive_file.lambda_zip,
   ]
 }
 
