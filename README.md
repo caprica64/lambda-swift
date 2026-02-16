@@ -476,20 +476,29 @@ With the unified module, adding new Lambda functions is straightforward:
 
 ## 🔄 CI/CD Integration
 
-### GitHub Actions Ready
-```yaml
-# Example workflow step for Swift Lambda
-- name: Build Swift Lambda
-  run: |
-    cd modules/lambda/src
-    ./build.sh
-    
-- name: Deploy Infrastructure
-  run: |
-    terraform init
-    terraform plan
-    terraform apply -auto-approve
-```
+### GitHub Actions Workflows
+
+This project includes automated CI/CD pipelines:
+
+#### Terraform CI/CD Pipeline
+- **On Pull Request**: Runs `terraform plan` and comments results on PR
+- **On Merge to Main**: Automatically runs `terraform apply` to deploy infrastructure
+- **Features**: Format checking, validation, plan review, automated deployment
+- **Authentication**: Uses AWS OIDC for secure, keyless authentication
+
+#### Swift Lambda Build Pipeline
+- **Triggers**: Automatically builds when Swift code changes
+- **Process**: Docker-based cross-compilation for Amazon Linux
+- **Artifacts**: Deployment packages available for download
+- **Functions**: Builds both prime-checker and factorial-calculator
+
+#### Setup Instructions
+1. **Configure AWS OIDC Provider** in your AWS account
+2. **Create IAM Role** with trust policy for GitHub Actions
+3. **Add `AWS_ROLE_ARN` secret** to GitHub repository settings
+4. **Push changes** - workflows run automatically
+
+See [`.github/workflows/README.md`](.github/workflows/README.md) for detailed setup instructions.
 
 ### Terraform State Management
 - **Remote State**: Configure S3 backend for team collaboration

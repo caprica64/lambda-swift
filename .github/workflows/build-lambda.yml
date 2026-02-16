@@ -1,0 +1,65 @@
+name: 'Build Swift Lambda Functions'
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'modules/lambda-function/functions/**/*.swift'
+      - 'modules/lambda-function/functions/**/Package.swift'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'modules/lambda-function/functions/**/*.swift'
+      - 'modules/lambda-function/functions/**/Package.swift'
+  workflow_dispatch:
+
+jobs:
+  build-prime-checker:
+    name: 'Build Prime Checker Lambda'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Prime Checker Lambda
+      run: |
+        cd modules/lambda-function/functions/prime-checker/src
+        chmod +x build.sh
+        ./build.sh
+
+    - name: Upload Prime Checker Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: prime-checker-lambda
+        path: modules/lambda-function/functions/prime-checker/src/lambda-deployment.zip
+        retention-days: 7
+
+  build-factorial-calculator:
+    name: 'Build Factorial Calculator Lambda'
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Factorial Calculator Lambda
+      run: |
+        cd modules/lambda-function/functions/factorial-calculator/src
+        chmod +x build.sh
+        ./build.sh
+
+    - name: Upload Factorial Calculator Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: factorial-calculator-lambda
+        path: modules/lambda-function/functions/factorial-calculator/src/factorial-deployment.zip
+        retention-days: 7
